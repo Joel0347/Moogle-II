@@ -13,7 +13,9 @@
 │   └── Spec.hs          # Pruebas unitarias
 ├── static/
 │   ├── css/             # Archivos CSS
+|   |   └── styles.css   
 │   ├── js/              # Archivos JavaScript
+|   |   └── script.js
 │   └── index.html       # Interfaz de usuario
 ├── data/
 │   └── documents/       # Carpeta para documentos TXT y PDF

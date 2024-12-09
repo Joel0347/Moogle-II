@@ -1,3 +1,14 @@
+stack new my-project
+cd my-project
+
+stack build
+stack exec my-project-exe
+
+
+
+
+
+
 package.yaml
 
 name: search-engine
@@ -24,19 +35,24 @@ extra-deps: []
 
 Main.hs 
 
-module Main where
+{-# LANGUAGE OverloadedStrings #-}
 
-import Happstack.Server (nullConf, simpleHTTP, ok, dir, path)
+import Happstack.Server (nullConf, simpleHTTP, ok, dir, path, serveDirectory, Browsing(DisableBrowsing))
+import Data.List (nub)
 import Indexer (indexDirectory)
 import Searcher (searchKeywords)
 
 main :: IO ()
 main = do
     index <- indexDirectory "data/documents"
-    simpleHTTP nullConf $ do
-        dir "search" $ path $ \query -> do
-            let results = searchKeywords (words query) index
-            ok (show results)
+    simpleHTTP nullConf $ msum
+        [ dir "static" $ serveDirectory DisableBrowsing [] "static"
+        , dir "search" $ path $ \query -> do
+            let results = nub (searchKeywords (words query) index)
+            ok $ show results
+        , serveDirectory DisableBrowsing [] "static"  -- Serve static files from here by default
+        ]
+
 
 
 
@@ -83,3 +99,75 @@ searchKeywords keywords index = concatMap (\kw -> searchKeyword kw index) keywor
 
 
 
+index.html 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Motor de Búsqueda</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Motor de Búsqueda</h1>
+    <input type="text" id="query" placeholder="Escribe tu búsqueda...">
+    <button onclick="search()">Buscar</button>
+    <div id="results"></div>
+    <script src="js/script.js"></script>
+</body>
+</html>
+
+
+
+css/styles.css 
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+input {
+    padding: 8px;
+    margin: 10px 0;
+    width: 300px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#results {
+    margin-top: 20px;
+}
+
+
+
+js/script.js 
+
+function search() {
+    const query = document.getElementById('query').value;
+    fetch(`/search/${query}`)
+        .then(response => response.json())
+        .then(data => {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            data.forEach(result => {
+                const p = document.createElement('p');
+                p.textContent = result;
+                resultsDiv.appendChild(p);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+}
