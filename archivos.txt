@@ -1,0 +1,85 @@
+package.yaml
+
+name: search-engine
+version: 0.1.0
+dependencies:
+  - base >= 4.7 && < 5
+  - directory
+  - text
+  - parsec
+  - http-types
+  - happstack-server
+
+
+
+stack.yaml
+
+resolver: lts-18.0
+packages:
+  - .
+extra-deps: []
+
+
+
+
+Main.hs 
+
+module Main where
+
+import Happstack.Server (nullConf, simpleHTTP, ok, dir, path)
+import Indexer (indexDirectory)
+import Searcher (searchKeywords)
+
+main :: IO ()
+main = do
+    index <- indexDirectory "data/documents"
+    simpleHTTP nullConf $ do
+        dir "search" $ path $ \query -> do
+            let results = searchKeywords (words query) index
+            ok (show results)
+
+
+
+Indexer.hs
+
+module Indexer (indexDirectory) where
+
+import System.Directory (listDirectory)
+import System.IO (readFile)
+
+-- Leer el contenido de un archivo
+readFileContent :: FilePath -> IO String
+readFileContent path = readFile path
+
+-- Indexar el contenido de un archivo
+indexFile :: FilePath -> IO [(String, FilePath)]
+indexFile path = do
+    content <- readFileContent path
+    let wordsList = words content
+    return [(word, path) | word <- wordsList]
+
+-- Indexar todos los archivos en un directorio
+indexDirectory :: FilePath -> IO [(String, FilePath)]
+indexDirectory dir = do
+    files <- listDirectory dir
+    indexes <- mapM indexFile files
+    return (concat indexes)
+
+
+
+Searcher.hs 
+
+module Searcher (searchKeywords) where
+
+import Data.List (isInfixOf)
+
+-- Buscar una palabra clave en el índice
+searchKeyword :: String -> [(String, FilePath)] -> [FilePath]
+searchKeyword keyword index = [path | (word, path) <- index, keyword `isInfixOf` word]
+
+-- Buscar múltiples palabras clave en el índice
+searchKeywords :: [String] -> [(String, FilePath)] -> [FilePath]
+searchKeywords keywords index = concatMap (\kw -> searchKeyword kw index) keywords
+
+
+
