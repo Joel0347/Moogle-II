@@ -9,3 +9,5 @@ Pasos para ejecutar el proyecto:
 2- Instalar las dependencias necesarias: `stack build`
 
 3- Ejecutar el proyecto: `stack exec Moogle-Engine-exe`
+
+##Nota: Para compilar el proyecto deben hacer `stack build` también antes de ejecutar.
