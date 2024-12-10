@@ -1,26 +1,11 @@
 # Moogle-II
- Making Moogle! again. This time using Haskell
+ 
+ El ya conocido motor de búsqueda que muchos estudiantes tuvieron la oportunidad de programar en primer año de la carrera ahora ha sido llevado al siguiente nivel, esta vez programado puramente declarativo con `Haskell`, como parte del proyecto final de Programación Declarativa. 
 
- search-engine/
-├── app/
-│   └── Main.hs          # Archivo principal
-├── src/
-│   ├── Indexer.hs       # Lógica para indexar archivos
-│   ├── Searcher.hs      # Lógica de búsqueda
-│   ├── PDFHandler.hs    # (Opcional) Manejo de archivos PDF
-│   └── Utils.hs         # Funciones auxiliares
-├── test/
-│   └── Spec.hs          # Pruebas unitarias
-├── static/
-│   ├── css/             # Archivos CSS
-|   |   └── styles.css   
-│   ├── js/              # Archivos JavaScript
-|   |   └── script.js
-│   └── index.html       # Interfaz de usuario
-├── data/
-│   └── documents/       # Carpeta para documentos TXT y PDF
-├── package.yaml         # Configuración del proyecto
-├── stack.yaml           # Configuración de Stack
-├── README.md            # Documentación del proyecto
-└── LICENSE              # Licencia del proyecto
+### Equipo:
 
+> Claudia Hernández Pérez C-312
+
+> Joel Aparicio Tamayo C-312
+
+> Kendry Javier del Pino Barbosa C-312

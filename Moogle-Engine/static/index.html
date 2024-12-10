@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Moogle-Engine</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <script>
+        async function search() {
+            const query = document.getElementById('query').value;
+            console.log('Query:', query);  // Depuración
+            const response = await fetch(`/search/${query}`);
+            console.log('Response:', response);  // Depuración
+            const results = await response.text();
+            console.log('Results:', results);  // Depuración
+            document.getElementById('results').innerText = results;
+        }
+    </script>
+</head>
+<body>
+    <h1>Moogle-Engine</h1>
+    <input type="text" id="query" placeholder="Enter search query">
+    <button onclick="search()">Search</button>
+    <pre id="results"></pre>
+</body>
+</html>
