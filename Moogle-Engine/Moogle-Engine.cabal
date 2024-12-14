@@ -37,6 +37,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , containers
     , directory
     , happstack-server
     , http-types
@@ -57,6 +58,7 @@ executable Moogle-Engine
   build-depends:
       Moogle-Engine
     , base >=4.7 && <5
+    , containers
     , directory
     , happstack-server
     , http-types
@@ -78,6 +80,7 @@ test-suite Moogle-Engine-test
   build-depends:
       Moogle-Engine
     , base >=4.7 && <5
+    , containers
     , directory
     , happstack-server
     , http-types

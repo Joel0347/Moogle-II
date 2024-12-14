@@ -27,6 +27,7 @@ dependencies:
 - http-types 
 - happstack-server
 - open-browser
+- containers
 
 ghc-options:
 - -Wall

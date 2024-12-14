@@ -7,6 +7,7 @@ import Indexer (indexDirectory)
 import Searcher (searchKeywords)
 import Web.Browser (openBrowser)
 import Control.Concurrent (forkIO)
+import qualified Data.Map as Map
 
 main :: IO ()
 main = do
