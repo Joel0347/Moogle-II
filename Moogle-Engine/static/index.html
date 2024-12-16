@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Moogle-Engine</title>
+    <title>Moogle</title>
     <link rel="stylesheet" type="text/css" href="css/styles.css">
-    <script>
-        async function search() {
-            const query = document.getElementById('query').value;
-            console.log('Query:', query);  // Depuración
-            const response = await fetch(`/search/${query}`);
-            console.log('Response:', response);  // Depuración
-            const results = await response.text();
-            console.log('Results:', results);  // Depuración
-            document.getElementById('results').innerText = results;
-        }
-    </script>
 </head>
 <body>
-    <h1>Moogle-Engine</h1>
-    <input type="text" id="query" placeholder="Enter search query">
-    <button onclick="search()">Search</button>
-    <pre id="results"></pre>
+    <form action="/search" method="get" id="search-form">
+        <input type="text" name="q" placeholder="Buscar...">
+        <input type="hidden" name="page" value="1">
+        <button type="submit">Buscar</button>
+    </form>
+    <div id="results" class="results"></div>
+    <div id="pagination"></div>
+
+    <script src="js/script.js"></script>
 </body>
 </html>

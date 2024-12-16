@@ -25,6 +25,7 @@ dependencies:
 - text 
 - parsec 
 - http-types 
+- filepath
 - happstack-server
 - open-browser
 - containers
