@@ -29,6 +29,12 @@ dependencies:
 - happstack-server
 - open-browser
 - containers
+- scotty
+- wai-middleware-static
+- multipart
+- bytestring
+- wai
+- wai-extra
 
 ghc-options:
 - -Wall

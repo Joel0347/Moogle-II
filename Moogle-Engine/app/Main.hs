@@ -1,45 +1,68 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Happstack.Server (nullConf, simpleHTTP, ok, dir, serveDirectory, Browsing(DisableBrowsing), toResponse, lookText')
-import Data.List (nub, sortBy)
-import Control.Monad (msum)
-import Repository (createRepository)
-import Moogle (query, SearchResult(..), SearchItem(..))
-import Web.Browser (openBrowser)
-import Control.Concurrent (forkIO)
-import qualified Data.Text as T
-import Data.Maybe (fromMaybe)
-import Text.Read (readMaybe)
-import Control.Monad.IO.Class (liftIO)
+module Main where
 
--- Paginación
-pageSize :: Int
-pageSize = 10
+import Web.Scotty
+import System.Directory (listDirectory, doesFileExist, createDirectoryIfMissing)
+import System.FilePath ((</>))
+import Network.Wai.Middleware.Static
+import Control.Monad.IO.Class (liftIO)
+import Network.HTTP.Types.Status (status404)
+import Web.Browser (openBrowser)
+import Network.HTTP.Types.Header (hContentDisposition)
+import qualified Data.Text.Lazy as T
+import qualified Data.Text as TS
+import qualified Data.ByteString.Lazy as BL
+import Network.Wai.Parse (defaultParseRequestBodyOptions, parseRequestBody, lbsBackEnd, FileInfo(..))
+
+-- Configuración del servidor
+uploadFolder :: FilePath
+uploadFolder = "data"
+
+staticFolder :: FilePath
+staticFolder = "static"
 
 main :: IO ()
 main = do
-    putStrLn "Cargando el repositorio..."
-    createRepository "data"
-    putStrLn "Repositorio cargado."
+    -- Asegurarnos de que la carpeta de subida existe
+    createDirectoryIfMissing True uploadFolder
 
-    _ <- forkIO $ simpleHTTP nullConf $ msum
-        [ dir "static" $ serveDirectory DisableBrowsing ["index.html"] "static"
-        , dir "search" $ do
-            queryParam <- lookText' "q"
-            liftIO $ putStrLn $ "Query: " ++ T.unpack queryParam
-            searchResult <- liftIO $ query queryParam
-            let resultItems = items searchResult
-            let paginatedResults = take pageSize resultItems
-            liftIO $ putStrLn $ "Paginated Results: " ++ show paginatedResults
-            let responseText = T.unpack $ T.unlines $ map formatResult paginatedResults
-            liftIO $ putStrLn $ "Response Text: " ++ responseText
-            ok $ toResponse responseText
-        ]
-    _ <- openBrowser "http://localhost:8000/static/index.html"
-    putStrLn "Servidor iniciado en http://localhost:8000"
-    _ <- getLine
-    return ()
+    -- Abrir automáticamente el navegador
+    openBrowser "http://localhost:3000"  -- Abre el navegador con la URL del servidor
 
-formatResult :: SearchItem -> T.Text
-formatResult (SearchItem title snippet score) =
-    "Title: " <> title <> "\nSnippet: " <> snippet <> "\nScore: " <> T.pack (show score) <> "\n\n"
+    -- Iniciar el servidor
+    scotty 3000 $ do
+        -- Servir archivos estáticos desde 'staticFolder'
+        middleware $ staticPolicy (addBase staticFolder)
+
+        -- Ruta principal: servir el index.html
+        get "/" $ do
+            file $ staticFolder </> "index.html"
+
+        -- Listar archivos disponibles en la carpeta de subida
+        get "/files" $ do
+            files <- liftIO $ listDirectory uploadFolder
+            json files
+
+        -- Descargar un archivo
+        get "/download/:filename" $ do
+            filename <- param "filename"
+            let filePath = uploadFolder </> T.unpack filename
+            fileExists <- liftIO $ doesFileExist filePath
+            if fileExists
+                then do
+                    setHeader "Content-Disposition" ("attachment; filename=" `T.append` filename)
+                    setHeader "Content-Type" "application/octet-stream"
+                    file filePath
+                else status status404 >> text "Archivo no encontrado."
+
+        -- Servir el archivo JavaScript
+        get "/static/js/script.js" $ do
+            file $ staticFolder </> "js" </> "script.js"
+
+        -- Servir el archivo CSS
+        get "/static/css/style.css" $ do
+            file $ staticFolder </> "css" </> "style.css"
+            
+        -- Asegurarse de servir archivos estáticos desde la carpeta 'uploadFolder' (data)
+        middleware $ staticPolicy (addBase uploadFolder)

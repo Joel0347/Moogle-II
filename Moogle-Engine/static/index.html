@@ -1,19 +1,35 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moogle</title>
-    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <!-- Corregido: Referencia directa a los archivos estáticos -->
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <form action="/search" method="get" id="search-form">
-        <input type="text" name="q" placeholder="Buscar...">
-        <input type="hidden" name="page" value="1">
-        <button type="submit">Buscar</button>
-    </form>
-    <div id="results" class="results"></div>
-    <div id="pagination"></div>
+    <div class="navbar">
+        <div class="logo">
+            Moogle
+        </div>
+    </div>
 
-    <script src="js/script.js"></script>
+    <div class="container">
+        <div class="files-section">
+            <h2>Archivos Disponibles</h2>
+            
+            <!-- Barra de búsqueda fija -->
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Buscar archivo...">
+            </div>
+
+            <ul id="file-list">
+                <!-- Los archivos se agregarán aquí dinámicamente -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Corregido: Referencia directa al archivo JS -->
+    <script src="/js/script.js"></script>
 </body>
 </html>
