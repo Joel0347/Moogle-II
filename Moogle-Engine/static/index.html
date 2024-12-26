@@ -4,32 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moogle</title>
-    <!-- Corregido: Referencia directa a los archivos estáticos -->
+    <!-- Referencia directa a los archivos estáticos -->
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" type="image/x-icon" href="./public/logoM.png">
 </head>
 <body>
     <div class="navbar">
-        <div class="logo">
-            Moogle
+        <div>
+            <img src="./public/logoMOOGLE.png" height="90">
         </div>
     </div>
 
     <div class="container">
-        <div class="files-section">
-            <h2>Archivos Disponibles</h2>
-            
-            <!-- Barra de búsqueda fija -->
-            <div class="search-bar">
-                <input type="text" id="search-input" placeholder="Buscar archivo...">
-            </div>
-
+        <!-- Barra de búsqueda fija -->
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Buscar archivo...">
+        </div>        
+        <div class="files-section">            
             <ul id="file-list">
                 <!-- Los archivos se agregarán aquí dinámicamente -->
             </ul>
         </div>
     </div>
 
-    <!-- Corregido: Referencia directa al archivo JS -->
+    <!-- Referencia directa al archivo JS -->
     <script src="/js/script.js"></script>
 </body>
 </html>
