@@ -12,6 +12,8 @@ import Network.HTTP.Types.Status
 import Web.Browser
 import qualified Data.Text.Lazy as T
 import Data.Aeson (object, (.=))
+import Data.List (sortBy)
+import Data.Ord (comparing)
 
 uploadFolder :: FilePath
 uploadFolder = "data"
@@ -21,11 +23,11 @@ staticFolder = "static"
 
 main :: IO ()
 main = do
-    createDirectoryIfMissing True uploadFolder
-    openBrowser "http://localhost:3000"
-    
     -- Cargar documentos al inicio
     docs <- loadDocuments uploadFolder
+
+    createDirectoryIfMissing True uploadFolder
+    openBrowser "http://localhost:3000"
     
     scotty 3000 $ do
         middleware $ staticPolicy (addBase staticFolder)
@@ -34,9 +36,13 @@ main = do
 
         -- Nueva ruta para búsqueda
         get "/search" $ do
-            query <- param "q"
-            let results = searchDocuments (T.unpack query) docs
-            json $ map (\(name, score) -> object ["filename" .= name, "score" .= score]) results
+            query <- param "query"
+            liftIO $ putStrLn $ "Query: " ++ T.unpack query
+            let queryText = ("query", T.unpack query) :: Document
+            let results = map (\doc -> (doc, jaccardSimilarity queryText doc)) docs
+            let filteredResults = filter (\(_, sim) -> sim > 0.1) results
+            let sortedResults = sortBy (comparing (negate . snd)) filteredResults
+            json $ map (\(doc, sim) -> object ["document" .= fst doc, "similarity" .= sim]) sortedResults
 
         -- Rutas existentes para archivos estáticos
         get "/files" $ do

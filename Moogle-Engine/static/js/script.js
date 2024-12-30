@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search-input');
     const fileList = document.getElementById('file-list');
+    console.log(fileList);
 
     function loadFiles(query = '') {
         if (!query) {
@@ -11,7 +12,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => console.error("Error:", error));
         } else {
             // Si hay consulta, usar la búsqueda TF-IDF
-            fetch(`/search?q=${encodeURIComponent(query)}`)
+            const startTime = performance.now();
+            fetch(`/search?query=${encodeURIComponent(query)}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                params: { query: query }
+            })
                 .then(response => response.json())
                 .then(results => {
                     fileList.innerHTML = '';
@@ -22,13 +28,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         results.forEach(result => {
                             const li = document.createElement('li');
+                            const doc = result.document;
+                            const sim = result.similarity;
+                            let simText = 'N/A';
+                            if (typeof sim !== 'undefined' && sim !== null) {
+                                simText = sim;
+                            }
                             li.innerHTML = `
-                                <span>${result.filename} (Relevancia: ${result.score.toFixed(4)})</span>
-                                <a href="/download/${result.filename}" class="download-link">Descargar</a>
+                                <span>${doc} (Relevancia: ${simText})</span>
+                                <a href="/download/${doc}" class="download-link">Descargar</a>
                             `;
                             fileList.appendChild(li);
                         });
                     }
+                    const endTime = performance.now();
+                    const tiempoTranscurrido = ((endTime - startTime) / 1000).toFixed(5);
+                    document.getElementById('time-result').innerText = "La búsqueda demoró: " + tiempoTranscurrido + " segs";
                 })
                 .catch(error => console.error("Error:", error));
         }
