@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search-input');
     const fileList = document.getElementById('file-list');
-    console.log(fileList);
 
     function loadFiles(query = '') {
         if (!query) {
@@ -21,11 +20,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(results => {
                     fileList.innerHTML = '';
-                    if (results.length === 0) {
-                        const li = document.createElement('li');
-                        li.innerHTML = `<span>No se encontraron resultados para "${query}"</span>`;
-                        fileList.appendChild(li);
+                    if (Boolean(results[0].suggestion)) {
+                        const endTime = performance.now();
+                        const tiempoTranscurrido = ((endTime - startTime) / 1000).toFixed(5);    
+                        document.getElementById('time-result').innerText = "La búsqueda demoró: " + tiempoTranscurrido + " segs";
+                        document.querySelector('.time').style.display = 'block';
+                        document.getElementById('not-found-result').innerText = `No se encontraron resultados para "${query}"`;
+                        document.querySelector('.not-found').style.display = 'block';
+                        results.forEach(result => {
+                            const suggestion = result.suggestion;
+                            const distance = result.distance;
+                            document.getElementById('suggestion-result').innerText = `¿Quisiste decir "${suggestion}"? (Distance: ${distance})`;
+                            document.querySelector('.suggestion').style.display = 'block';
+                        });
                     } else {
+                        document.querySelector('.not-found').style.display = 'none';
+                        document.querySelector('.suggestion').style.display = 'none';
                         results.forEach(result => {
                             const li = document.createElement('li');
                             const doc = result.document;
@@ -44,12 +54,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     const endTime = performance.now();
                     const tiempoTranscurrido = ((endTime - startTime) / 1000).toFixed(5);
                     document.getElementById('time-result').innerText = "La búsqueda demoró: " + tiempoTranscurrido + " segs";
+                    document.querySelector('.time').style.display = 'block';
                 })
                 .catch(error => console.error("Error:", error));
         }
     }
 
     function displayFiles(files) {
+        document.querySelector('.time').style.display = 'none';
         fileList.innerHTML = '';
         if (files.length === 0) {
             const li = document.createElement('li');
