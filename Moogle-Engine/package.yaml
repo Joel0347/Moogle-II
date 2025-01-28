@@ -20,24 +20,26 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/githubuser/Moogle-Engine#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- directory 
-- text 
-- parsec 
-- http-types 
-- filepath
-- happstack-server
-- open-browser
-- containers
-- aeson
-- scotty
-- wai-middleware-static
-- multipart
-- bytestring
-- wai
-- wai-extra
-- parallel
-- containers
+  - base >= 4.7 && < 5
+  - directory 
+  - text 
+  - parsec 
+  - http-types 
+  - filepath
+  - happstack-server
+  - open-browser
+  - containers
+  - aeson
+  - scotty
+  - wai-middleware-static
+  - multipart
+  - bytestring
+  - wai
+  - wai-extra
+  - parallel
+  - containers
+  - array
+
 
 ghc-options:
 - -Wall

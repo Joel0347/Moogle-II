@@ -4,7 +4,6 @@ body {
     margin: 0;
     padding: 0;
 }
-
 .navbar {
     background-color: #ff5a5f;
     padding: 10px;
@@ -12,7 +11,6 @@ body {
     text-align: center;
     font-size: 24px;
 }
-
 .container {
     display: flex;
     flex-direction: column;
@@ -24,12 +22,10 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
 .search-section {
     width: 100%;
     margin-bottom: 20px;
 }
-
 #search-input {
     width: 100%;
     padding: 15px 0 15px 10px;
@@ -37,23 +33,18 @@ body {
     border: 1px solid #ddd;
     border-radius: 5px;
 }
-
 .files-section {
     width: 100%;
     max-height: 400px;
     overflow-y: auto;
 }
-
 h2 {
     color: #ff5a5f;
 }
-
-/* Estilo de los archivos en la lista */
 ul {
     list-style: none;
     padding: 0;
 }
-
 li {
     background-color: #f9f9f9;
     margin: 5px 0;
@@ -61,12 +52,13 @@ li {
     border-radius: 5px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
-
 .download-link {
     color: #ff5a5f;
     text-decoration: none;
 }
-
 .download-link:hover {
     text-decoration: underline;
+}
+.not-found, .suggestion, .time {
+    display: none;
 }
