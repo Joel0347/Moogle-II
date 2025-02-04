@@ -27,29 +27,41 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.querySelector('.time').style.display = 'block';
                         document.getElementById('not-found-result').innerText = `No se encontraron resultados para "${query}"`;
                         document.querySelector('.not-found').style.display = 'block';
-                        results.forEach(result => {
-                            const suggestion = result.suggestion;
-                            const distance = result.distance;
+                       
+                        const displaySuggestion = ({ suggestion, distance }) => {
                             document.getElementById('suggestion-result').innerText = `¿Quisiste decir "${suggestion}"? (Distance: ${distance})`;
                             document.querySelector('.suggestion').style.display = 'block';
-                        });
+                        };
+                        
+                        results
+                        .map(result => ({
+                            suggestion: result.suggestion,
+                            distance: result.distance
+                        }))
+                        .forEach(displaySuggestion);
+                          
                     } else {
                         document.querySelector('.not-found').style.display = 'none';
                         document.querySelector('.suggestion').style.display = 'none';
-                        results.forEach(result => {
+
+                        const createListItem = (doc, sim) => {
+                            const simText = sim !== undefined && sim !== null ? sim : 'N/A';
                             const li = document.createElement('li');
-                            const doc = result.document;
-                            const sim = result.similarity;
-                            let simText = 'N/A';
-                            if (typeof sim !== 'undefined' && sim !== null) {
-                                simText = sim;
-                            }
                             li.innerHTML = `
                                 <span>${doc} (Relevancia: ${simText})</span>
                                 <a href="/download/${doc}" class="download-link">Descargar</a>
                             `;
-                            fileList.appendChild(li);
-                        });
+                            return li;
+                        };
+
+                        const appendResultsToFileList = (results, fileList) => {
+                            const listItems = results.map(result => 
+                                createListItem(result.document, result.similarity)
+                            );
+                            listItems.forEach(li => fileList.appendChild(li));
+                        };
+
+                        appendResultsToFileList(results, fileList);
                     }
                     const endTime = performance.now();
                     const tiempoTranscurrido = ((endTime - startTime) / 1000).toFixed(5);
@@ -60,6 +72,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    const showFile = (file) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span>${file}</span>
+            <a href="/download/${file}" class="download-link">Descargar</a>
+        `;
+        fileList.appendChild(li);
+    }
+
     function displayFiles(files) {
         document.querySelector('.time').style.display = 'none';
         fileList.innerHTML = '';
@@ -68,14 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
             li.innerHTML = '<span>No hay archivos disponibles</span>';
             fileList.appendChild(li);
         } else {
-            files.forEach(file => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <span>${file}</span>
-                    <a href="/download/${file}" class="download-link">Descargar</a>
-                `;
-                fileList.appendChild(li);
-            });
+            files.forEach(showFile);
         }
     }
 

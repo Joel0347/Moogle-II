@@ -1,4 +1,5 @@
 data/
+dist-newstyle/
 tfidf_cache.txt
 .stack-work/
 *~
