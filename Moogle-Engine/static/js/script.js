@@ -28,9 +28,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('not-found-result').innerText = `No se encontraron resultados para "${query}"`;
                         document.querySelector('.not-found').style.display = 'block';
                        
-                        const displaySuggestion = ({ suggestion, distance }) => {
-                            document.getElementById('suggestion-result').innerText = `¿Quisiste decir "${suggestion}"? (Distance: ${distance})`;
-                            document.querySelector('.suggestion').style.display = 'block';
+                        let suggestions = ""
+                        const displaySuggestion = ({ suggestion, _ }) => {
+                            console.log(suggestion);
+                            suggestions += `${suggestion} `;
                         };
                         
                         results
@@ -39,7 +40,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             distance: result.distance
                         }))
                         .forEach(displaySuggestion);
-                          
+
+                        document.getElementById('suggestion-result').innerText = `¿Quisiste decir "${suggestions}"?`;
+                        document.querySelector('.suggestion').style.display = 'block';                          
                     } else {
                         document.querySelector('.not-found').style.display = 'none';
                         document.querySelector('.suggestion').style.display = 'none';

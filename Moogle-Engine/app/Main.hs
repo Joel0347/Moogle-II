@@ -98,7 +98,9 @@ main = do
             let sortedResults = sortBy (comparing (negate . snd)) filteredResults
             if null sortedResults
                 then do
-                    let suggestions = take 1 $ sortBy (comparing snd) (suggestCorrection dictionary (TL.toStrict query))
+                    -- let suggestions = take 1 $ sortBy (comparing snd) (suggestCorrection dictionary (TL.toStrict query))
+                    -- json $ map (\(suggestion, dist) -> object ["suggestion" .= suggestion, "distance" .= dist]) suggestions
+                    let suggestions = suggestQueryCorrection dictionary query
                     json $ map (\(suggestion, dist) -> object ["suggestion" .= suggestion, "distance" .= dist]) suggestions
                 else do
                     json $ map (\(doc, sim) -> object ["document" .= doc, "similarity" .= sim]) sortedResults

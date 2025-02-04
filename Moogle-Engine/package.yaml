@@ -39,7 +39,10 @@ dependencies:
   - parallel
   - containers
   - array
-
+  - hxt
+  - zip-archive
+  - xml
+  - text
 
 ghc-options:
 - -Wall
