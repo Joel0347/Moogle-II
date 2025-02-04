@@ -5,11 +5,12 @@ module Lib
     , Document
     , DocumentCollection
     , buildDictionary
-    , suggestCorrection
     , levenshtein
     , tfIdf
     , precomputeTfIdf
     , normalize
+    , readDocx
+    , suggestQueryCorrection
     ) where
 
 import Data.List as DL
@@ -25,6 +26,15 @@ import Data.List (nub, sort, group)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Control.Parallel.Strategies (parMap, rpar)
+import Text.XML.HXT.Core
+import System.FilePath
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Lazy.Char8 as BC
+import Codec.Archive.Zip (toArchive, fromEntry, zEntries, Entry, eRelativePath)
+import qualified Data.Text.Lazy as TL
+import Data.Ord (comparing)
 
 type Document = (String, String)
 type DocumentCollection = [Document]
@@ -68,8 +78,29 @@ loadDocuments :: FilePath -> IO DocumentCollection
 loadDocuments dir = do
     files <- listDirectory dir
     forM files $ \file -> do
-        content <- readFile (dir ++ "/" ++ file)
+        let filePath = dir </> file  -- Define la ruta completa del archivo
+        content <- case takeExtension filePath of
+            ".docx" -> readDocx filePath
+            _       -> readFile filePath  -- Para archivos de texto plano
         return (file, normalize content)
+
+readDocx :: FilePath -> IO String
+readDocx filePath = do
+    archive <- toArchive <$> B.readFile filePath
+    let entries = zEntries archive
+    let paths = map eRelativePath entries  -- Obtener las rutas de los archivos dentro del ZIP
+    
+    case filter (\e -> eRelativePath e == "word/document.xml") entries of
+        (docXml:_) -> do
+            let xmlContent = fromEntry docXml
+            return (extractText xmlContent)
+        _ -> do
+            return ""
+
+extractText :: B.ByteString -> String
+extractText xmlContent = 
+    let xmlTrees = runLA (xreadDoc >>> getChildren) (BC.unpack xmlContent) 
+    in unwords (concatMap (runLA (deep (isElem >>> hasName "w:t" /> getText))) xmlTrees)
 
 buildDictionary :: DocumentCollection -> Set.Set String
 buildDictionary documents = 
@@ -97,3 +128,10 @@ suggestCorrection :: Set String -> Text -> [(Text, Int)]
 suggestCorrection dictionary word =
     let dictionaryList = map pack (Set.toList dictionary)
     in map (\w -> (w, levenshtein (unpack w) (unpack word))) dictionaryList
+
+suggestQueryCorrection :: Set String -> TL.Text -> [(T.Text, Int)]
+suggestQueryCorrection dictionary query =
+    let wordsInQuery = T.words (TL.toStrict query)  -- Dividir la query en palabras
+        suggestionsPerWord = map (suggestCorrection dictionary) wordsInQuery  -- Obtener sugerencias para cada palabra
+        bestSuggestions = map (take 1 . sortBy (comparing snd)) suggestionsPerWord  -- Tomar la mejor sugerencia por palabra
+    in concat bestSuggestions  -- Convertimos la lista de listas en una lista plana
