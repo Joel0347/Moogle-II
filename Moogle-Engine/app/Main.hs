@@ -13,13 +13,17 @@ import Web.Browser
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text as T
 import Data.Aeson (object, (.=))
-import Data.List (sortBy, words)
+import Data.List (sortBy, words, isInfixOf)  -- Agregado isInfixOf
 import Data.Ord (comparing)
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Data.Map (Map)
 import Control.Parallel.Strategies (parMap, rpar)
 import System.IO
+import qualified Data.Text.IO as TIO
+import Data.Text.Encoding (decodeUtf8, decodeUtf8')
+import qualified Data.ByteString as BS
+import Data.Char (chr)
 
 uploadFolder :: FilePath
 uploadFolder = "data"
@@ -58,6 +62,17 @@ queryTfIdfSum tfIdfDict queryFreq =
         docTfIdfSums = Map.foldrWithKey (\word freq acc -> Map.unionWith (+) (Map.map (* fromIntegral freq) (wordTfIdf word)) acc) Map.empty queryFreq
     in docTfIdfSums
 
+getDocumentSnippet :: String -> String -> Int -> String  -- Cambiado el tipo de maxLen a Int
+getDocumentSnippet content query maxLen = 
+    let words = filter (not . null) $ lines content
+        queryWords = map normalize $ Data.List.words query
+        containsQuery line = any (\qw -> qw `isInfixOf` normalize line) queryWords
+        relevant = filter containsQuery words
+        snippet = if null relevant 
+                 then take maxLen content  -- Si no hay coincidencias, tomar el inicio
+                 else take maxLen $ head relevant  -- Tomar el primer fragmento relevante
+    in snippet
+
 main :: IO ()
 main = do
     -- Cargar documentos al inicio
@@ -94,7 +109,7 @@ main = do
             let queryFreq = queryWordFreq (T.unpack strictQuery)
             let tfIdfSums = queryTfIdfSum tfIdfDict queryFreq
             let results = Map.toList tfIdfSums
-            let filteredResults = filter (\(_, sim) -> sim /= 0) results
+            let filteredResults = filter (\(_, sim) -> sim != 0) results
             let sortedResults = sortBy (comparing (negate . snd)) filteredResults
             if null sortedResults
                 then do
@@ -127,6 +142,27 @@ main = do
                     liftIO $ putStrLn "File not found."
                     status status404
                     text "Archivo no encontrado."
+
+        -- Ruta para obtener snippets
+        get "/snippet/:filename" $ do
+            filename <- param "filename"
+            query <- param "query"
+            let filePath = uploadFolder </> TL.unpack filename
+            fileExists <- liftIO $ doesFileExist filePath
+            if fileExists
+                then do
+                    content <- liftIO $ do
+                        -- Intentar leer con diferentes codificaciones
+                        rawContent <- BS.readFile filePath
+                        -- Intentar primero UTF-8, si falla usar Latin1
+                        return $ case decodeUtf8' rawContent of
+                            Right text -> T.unpack text
+                            Left _ -> map (chr . fromIntegral) $ BS.unpack rawContent
+                    let snippet = getDocumentSnippet content (TL.unpack query) 200
+                    json $ object ["snippet" .= snippet]
+                else do
+                    status status404
+                    json $ object ["error" .= ("Archivo no encontrado" :: String)]
 
         -- Middleware para archivos en el directorio de subida
         middleware $ staticPolicy (addBase uploadFolder)
