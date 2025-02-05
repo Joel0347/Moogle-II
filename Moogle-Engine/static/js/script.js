@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="file-info">
                                     <span>${doc}</span>
                                     <a href="/download/${doc}" class="download-link" onclick="event.stopPropagation()">Descargar</a>
-                                    <span>(Relevancia: ${simText})</span>
                                 </div>
                                 <span class="arrow">▼</span>
                             `;
@@ -94,7 +93,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 snippet = snippet.replace(regex, match => `<span class="highlight">${match}</span>`);
                                             }
                                         });
-                                        
+
+                                        const processTerms = (inputValue, snippet) => 
+                                            inputValue.split(' ')
+                                              .filter(term => term.trim())
+                                              .reduce((acc, term) => {
+                                                const regex = new RegExp(term, 'gi');
+                                                return acc.replace(regex, match => `<span class="highlight">${match}</span>`);
+                                              }, snippet);
+                                          
+                                        processTerms(searchInput.value, snippet);
+                                          
                                         snippetContainer.innerHTML = `<div class="snippet-text">${snippet}</div>`;
                                     } catch (error) {
                                         console.error('Error al cargar el snippet:', error);

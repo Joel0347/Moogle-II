@@ -24,6 +24,7 @@ import qualified Data.Text.IO as TIO
 import Data.Text.Encoding (decodeUtf8, decodeUtf8')
 import qualified Data.ByteString as BS
 import Data.Char (chr)
+import System.FilePath
 
 uploadFolder :: FilePath
 uploadFolder = "data"
@@ -109,12 +110,10 @@ main = do
             let queryFreq = queryWordFreq (T.unpack strictQuery)
             let tfIdfSums = queryTfIdfSum tfIdfDict queryFreq
             let results = Map.toList tfIdfSums
-            let filteredResults = filter (\(_, sim) -> sim != 0) results
+            let filteredResults = filter (\(_, sim) -> sim /= 0) results
             let sortedResults = sortBy (comparing (negate . snd)) filteredResults
             if null sortedResults
                 then do
-                    -- let suggestions = take 1 $ sortBy (comparing snd) (suggestCorrection dictionary (TL.toStrict query))
-                    -- json $ map (\(suggestion, dist) -> object ["suggestion" .= suggestion, "distance" .= dist]) suggestions
                     let suggestions = suggestQueryCorrection dictionary query
                     json $ map (\(suggestion, dist) -> object ["suggestion" .= suggestion, "distance" .= dist]) suggestions
                 else do
@@ -151,13 +150,16 @@ main = do
             fileExists <- liftIO $ doesFileExist filePath
             if fileExists
                 then do
-                    content <- liftIO $ do
-                        -- Intentar leer con diferentes codificaciones
-                        rawContent <- BS.readFile filePath
-                        -- Intentar primero UTF-8, si falla usar Latin1
-                        return $ case decodeUtf8' rawContent of
-                            Right text -> T.unpack text
-                            Left _ -> map (chr . fromIntegral) $ BS.unpack rawContent
+                    -- content <- liftIO $ do
+                    --     -- Intentar leer con diferentes codificaciones
+                    --     rawContent <- BS.readFile filePath
+                    --     -- Intentar primero UTF-8, si falla usar Latin1
+                    --     return $ case decodeUtf8' rawContent of
+                    --         Right text -> T.unpack text
+                    --         Left _ -> map (chr . fromIntegral) $ BS.unpack rawContent
+                    content <- liftIO $ case takeExtension filePath of
+                        ".docx" -> readDocx filePath
+                        _       -> readFile filePath
                     let snippet = getDocumentSnippet content (TL.unpack query) 200
                     json $ object ["snippet" .= snippet]
                 else do
