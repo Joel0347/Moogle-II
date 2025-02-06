@@ -1,7 +1,6 @@
 module Lib
     (
       loadDocuments
-    , cosineSimilarity
     , Document
     , DocumentCollection
     , buildDictionary
@@ -64,15 +63,6 @@ precomputeTfIdf docs =
         allWords = Set.toList $ buildDictionary docs
         tfIdfForWord word = Map.fromList [(file, Map.findWithDefault 0 word tfIdfMap) | ((file, _), tfIdfMap) <- zip docs tfIdfMaps]
     in Map.fromList [(word, tfIdfForWord word) | word <- allWords]
-
--- Calcula la similitud entre dos documentos usando TF-IDF
-cosineSimilarity :: Map String Double -> Map String Double -> Double
-cosineSimilarity tfIdf1 tfIdf2 =
-    let dotProduct = sum [w1 * w2 | (term, w1) <- Map.toList tfIdf1, let w2 = Map.findWithDefault 0 term tfIdf2]
-        magnitude m = sqrt $ sum [w^2 | w <- Map.elems m]
-        mag1 = magnitude tfIdf1
-        mag2 = magnitude tfIdf2
-    in dotProduct / (mag1 * mag2)
 
 loadDocuments :: FilePath -> IO DocumentCollection
 loadDocuments dir = do

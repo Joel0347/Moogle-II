@@ -150,13 +150,6 @@ main = do
             fileExists <- liftIO $ doesFileExist filePath
             if fileExists
                 then do
-                    -- content <- liftIO $ do
-                    --     -- Intentar leer con diferentes codificaciones
-                    --     rawContent <- BS.readFile filePath
-                    --     -- Intentar primero UTF-8, si falla usar Latin1
-                    --     return $ case decodeUtf8' rawContent of
-                    --         Right text -> T.unpack text
-                    --         Left _ -> map (chr . fromIntegral) $ BS.unpack rawContent
                     content <- liftIO $ case takeExtension filePath of
                         ".docx" -> readDocx filePath
                         _       -> readFile filePath

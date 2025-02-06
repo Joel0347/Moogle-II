@@ -48,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.querySelector('.suggestion').style.display = 'none';
 
                         const createListItem = (doc, sim) => {
-                            const simText = sim !== undefined && sim !== null ? sim : 'N/A';
                             const li = document.createElement('li');
                             
                             // Crear contenedor principal
